@@ -15,9 +15,9 @@ public class JSONService {
     protected Mundo mundo;
 
     public JSONService() {
-        tracks = Singleton.getInstance().getTrack();
+        //tracks = Singleton.getInstance().getTrack();
         mundo = Singleton.getInstance().getMundo();
-
+        /*
         if (tracks.size()==0) {
             Track t1 = new Track();
             t1.setTitle("Enter Sandman");
@@ -29,7 +29,7 @@ public class JSONService {
             t2.setSinger("Georgie Dann");
             tracks.add(t2);
         }
-
+        */
     }
 
     @GET
@@ -38,12 +38,19 @@ public class JSONService {
     public Usuario getUser(@PathParam("id") String id) {
         return mundo.consultarUsuario(id);
     }
-    //Preguntar!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     @GET
     @Path("/obj/{user}/{obj}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Objeto getObj(@PathParam("user"+"obj") Usuario user, String nomObj) {
-        return mundo.consultarObjetoDeUsuario(user, nomObj );
+    public Objeto getObj(@PathParam("user"+"obj") String user, String nomObj) {
+        Usuario u = mundo.consultarUsuario(user);
+        if (u.equals(null)){
+            return null;
+            //return Response.status(409).entity("User already exists").build();
+        }
+        else{
+            return mundo.consultarObjetoDeUsuario(u, nomObj );
+        }
+
     }
 
     @POST
@@ -60,14 +67,38 @@ public class JSONService {
 
     }
     @POST
-    @Path("/obj")
+    @Path("/newobj")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response newObj (Usuario user, Objeto o) {
         mundo.añadirObjetoAUsuario(user, o);
         return Response.status(201).entity("Object added correctly").build();
 
     }
+    @POST
+    @Path("/elimobj")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response elimObj (Usuario user, String obj) {
+        mundo.eliminarObjetosDeUsuario(user, obj);
+        return Response.status(201).entity("Object removed correctly").build();
 
+    }
+    @POST
+    @Path("/elimuser")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response elimUser (String nombre) {
+        mundo.eliminarUsuario(nombre);
+        return Response.status(201).entity("User removed correctly").build();
+
+    }
+    @POST
+    @Path("/transf")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response transf (Usuario origen, Usuario destino, Mundo.Objeto o) {
+        mundo.transferirObjetoEntreUsuarios(origen, destino, o);
+        return Response.status(201).entity("transfer correctly").build();
+
+    }
+    /*
     @GET
     @Path("/got/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -96,16 +127,6 @@ public class JSONService {
         // Atencion: siempre añade en la misma posicion por el scope de tracks
         return Response.status(201).entity("Track added in position "+tracks.size()).build();
     }
-    /*
-    @POST
-    @Path("/newObj")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response newTrack(Track track) {
-        tracks.add(track);
-        // Atencion: siempre añade en la misma posicion por el scope de tracks
-        return Response.status(201).entity("Track added in position "+tracks.size()).build();
-    }
-    */
 
     @POST
     @Path("/post")
@@ -115,5 +136,6 @@ public class JSONService {
         String result = "Track saved : " + track;
         return Response.status(201).entity(result).build();
     }
+    */
 
 }
